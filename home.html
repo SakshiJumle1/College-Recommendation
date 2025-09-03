@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>College Recommendation</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="form-container">
+    <h2>Enter Your Details</h2>
+    <form action="/recommend" method="post">
+      <input type="number" step="0.01" name="percentile" placeholder="Percentile" required><br>
+      <select name="gender">
+        <option>Male</option>
+        <option>Female</option>
+      </select><br>
+      <select name="category">
+        <option>OPEN</option>
+        <option>OBC</option>
+        <option>SC</option>
+        <option>ST</option>
+        <option>EWS</option>
+      </select><br>
+      <input type="text" name="city" placeholder="Preferred City" required><br>
+      <select name="branch">
+        <option>CSE</option>
+        <option>IT</option>
+        <option>ENTC</option>
+      </select><br>
+      <button type="submit">Get Recommendations</button>
+    </form>
+  </div>
+</body>
+</html>
