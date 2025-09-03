@@ -3,12 +3,13 @@ import sqlite3
 import pandas as pd
 import pickle
 
-app = Flask(__name__)
+# Tell Flask to use current folder for HTML & CSS
+app = Flask(__name__, template_folder='.', static_folder='.')
 app.secret_key = "supersecretkey"
 
 # Load trained model
 model = pickle.load(open("model.pkl", "rb"))
-colleges = pd.read_csv("data/colleges.csv")
+colleges = pd.read_csv("colleges.csv")
 
 # ------------------ DATABASE INIT ------------------ #
 def init_sqlite_db():
