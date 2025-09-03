@@ -4,7 +4,7 @@ from sklearn.ensemble import RandomForestClassifier
 import pickle
 
 # Load dataset
-df = pd.read_csv("data/colleges.csv")
+df = pd.read_csv("colleges.csv")
 
 # Features & Target
 X = df[["Percentile","Gender","Category"]]
