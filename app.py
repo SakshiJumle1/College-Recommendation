@@ -3,16 +3,15 @@ import sqlite3
 import pandas as pd
 import pickle
 
-# Tell Flask to use current folder for HTML & CSS
 app = Flask(__name__, template_folder='.', static_folder='.')
 app.secret_key = "supersecretkey"
 
-# Load trained model
-model = pickle.load(open("model.pkl", "rb"))
-colleges = pd.read_csv("colleges.csv")
+# Load model and CSV
+model = pickle.load(open("model.pkl","rb"))
+df = pd.read_csv("students_colleges.csv")
 
-# ------------------ DATABASE INIT ------------------ #
-def init_sqlite_db():
+# ---------------- DATABASE ----------------
+def init_db():
     conn = sqlite3.connect("database.db")
     conn.execute('''CREATE TABLE IF NOT EXISTS users
                     (id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -20,9 +19,9 @@ def init_sqlite_db():
                      password TEXT)''')
     conn.close()
 
-init_sqlite_db()
+init_db()
 
-# ------------------ ROUTES ------------------ #
+# ---------------- ROUTES ----------------
 @app.route("/")
 def index():
     return render_template("login.html")
@@ -63,7 +62,7 @@ def home():
         return redirect("/")
     return render_template("home.html")
 
-# ------------------ RECOMMENDATION ------------------ #
+# ---------------- RECOMMENDATION ----------------
 @app.route("/recommend", methods=["POST"])
 def recommend():
     percentile = float(request.form["percentile"])
@@ -73,26 +72,25 @@ def recommend():
     branch = request.form["branch"]
 
     # Filter dataset
-    subset = colleges[(colleges["Branch"]==branch) & (colleges["City"]==city)]
+    subset = df[(df["Branch"]==branch) & (df["City"]==city)]
 
     if subset.empty:
         return "⚠️ No colleges found for this city/branch."
 
-    # Prepare features
-    X = subset[["Percentile","Gender","Category"]]
-    X = pd.get_dummies(X)
+    # Prepare features for prediction
+    X_user = subset[["Percentile","Gender","Category"]]
+    X_user = pd.get_dummies(X_user)
 
-    # Align with training model
+    # Align columns with trained model
     for col in model.feature_names_in_:
-        if col not in X.columns:
-            X[col] = 0
-    X = X[model.feature_names_in_]
+        if col not in X_user.columns:
+            X_user[col] = 0
+    X_user = X_user[model.feature_names_in_]
 
-    # Predict probabilities
-    probs = model.predict_proba(X)[:,1]
-    subset["Admission_Probability"] = probs
+    # Predict admission probability
+    subset["Admission_Probability"] = model.predict_proba(X_user)[:,1]
 
-    # Rank top 20
+    # Top 20 recommendations
     result = subset.sort_values("Admission_Probability", ascending=False).head(20)
 
     return render_template("result.html", tables=[result.to_html(classes='data', header="true")])
